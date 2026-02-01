@@ -15,6 +15,11 @@ export class ProjectsService {
         pages: {
           create: pages?.map((page: any, index: number) => ({
             id: page.id,
+            name: page.name,
+            backgroundColor: page.backgroundColor,
+            layout: page.layout,
+            gridMode: page.gridMode || false,
+            gridLayout: page.gridLayout || null,
             duration: page.duration,
             order: index,
             elements: {
@@ -88,6 +93,11 @@ export class ProjectsService {
             data: {
               id: page.id,
               projectId: id,
+              name: page.name,
+              backgroundColor: page.backgroundColor,
+              layout: page.layout,
+              gridMode: page.gridMode || false,
+              gridLayout: page.gridLayout || null,
               duration: page.duration,
               order: i,
               elements: {

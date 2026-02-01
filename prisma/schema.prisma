@@ -25,10 +25,15 @@ model Page {
   id        String   @id @default(uuid())
   projectId String
   project   Project  @relation(fields: [projectId], references: [id], onDelete: Cascade)
-  order     Int      @default(0)
-  duration  Int      @default(5) // in seconds
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  name            String?
+  backgroundColor String?
+  layout          String?
+  gridMode        Boolean  @default(false)
+  gridLayout      Json?
+  order           Int      @default(0)
+  duration        Int      @default(5) // in seconds
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
 
   elements  Element[]
 }

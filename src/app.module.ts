@@ -4,6 +4,7 @@ import { AppController } from "./app.controller";
 import { AppService } from "./app.service";
 import { ProjectsModule } from "./projects/projects.module";
 import { AssetsModule } from "./assets/assets.module";
+import { ExportModule } from "./export/export.module";
 import { ServeStaticModule } from "@nestjs/serve-static";
 import { join } from "path";
 
@@ -14,6 +15,7 @@ import { join } from "path";
     }),
     ProjectsModule,
     AssetsModule,
+    ExportModule,
     ServeStaticModule.forRoot({
       rootPath: join(__dirname, "..", "uploads"),
       serveRoot: "/uploads",
