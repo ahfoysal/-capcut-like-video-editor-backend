@@ -6,15 +6,46 @@ import { CreateProjectDto } from "./dto/create-project.dto";
 export class ProjectsService {
   constructor(private prisma: PrismaService) {}
 
-  create(createProjectDto: CreateProjectDto) {
+  async create(createProjectDto: any) {
+    const { pages, ...projectData } = createProjectDto;
+
     return this.prisma.project.create({
-      data: createProjectDto,
+      data: {
+        ...projectData,
+        pages: {
+          create: pages?.map((page: any, index: number) => ({
+            id: page.id,
+            duration: page.duration,
+            order: index,
+            elements: {
+              create: page.elements?.map((el: any) => ({
+                id: el.id,
+                type: el.type,
+                startTime: el.startTime,
+                duration: el.duration,
+                layer: el.layer || 0,
+                properties: el.properties || {},
+              })),
+            },
+          })),
+        },
+      },
+      include: {
+        pages: {
+          include: { elements: true },
+        },
+      },
     });
   }
 
   findAll() {
     return this.prisma.project.findMany({
-      include: { pages: true },
+      include: {
+        pages: {
+          include: { elements: true },
+        },
+      },
+      orderBy: { updatedAt: "desc" },
     });
   }
 
@@ -24,15 +55,57 @@ export class ProjectsService {
       include: {
         pages: {
           include: { elements: true },
+          orderBy: { order: "asc" },
         },
       },
     });
   }
 
-  update(id: string, updateProjectDto: any) {
-    return this.prisma.project.update({
-      where: { id },
-      data: updateProjectDto,
+  async update(id: string, updateProjectDto: any) {
+    const { pages, ...projectData } = updateProjectDto;
+
+    return this.prisma.$transaction(async (tx) => {
+      // Update basic project info
+      const project = await tx.project.update({
+        where: { id },
+        data: projectData,
+      });
+
+      if (pages) {
+        // Simple strategy: delete existing pages and elements and recreate them
+        // In a production app, we would want to diff and update, but for this editor, replacement is cleaner.
+        await tx.element.deleteMany({
+          where: { page: { projectId: id } },
+        });
+        await tx.page.deleteMany({
+          where: { projectId: id },
+        });
+
+        // Recreate pages and elements
+        for (let i = 0; i < pages.length; i++) {
+          const page = pages[i];
+          await tx.page.create({
+            data: {
+              id: page.id,
+              projectId: id,
+              duration: page.duration,
+              order: i,
+              elements: {
+                create: page.elements?.map((el: any) => ({
+                  id: el.id,
+                  type: el.type,
+                  startTime: el.startTime,
+                  duration: el.duration,
+                  layer: el.layer || 0,
+                  properties: el.properties || {},
+                })),
+              },
+            },
+          });
+        }
+      }
+
+      return this.findOne(id);
     });
   }
 
