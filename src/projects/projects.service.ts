@@ -7,7 +7,7 @@ export class ProjectsService {
   constructor(private prisma: PrismaService) {}
 
   async create(createProjectDto: any) {
-    const { pages, ...projectData } = createProjectDto;
+    const { pages, id, ...projectData } = createProjectDto;
 
     return this.prisma.project.create({
       data: {
